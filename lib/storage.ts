@@ -480,7 +480,7 @@ export const getUserAnalytics = (userId: string): AnalyticsData | null => {
     title: p.title,
     views: p.views,
     upvotes: p.upvotes,
-    ctr: p.views > 0 ? ((p.upvotes / p.views) * 100).toFixed(2) : "0",
+    ctr: p.views > 0 ? Number(((p.upvotes / p.views) * 100).toFixed(2)) : 0,
   }))
 
   return {
