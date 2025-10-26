@@ -12,6 +12,8 @@ const randomizeLocation = (lat: number, lng: number) => {
   return { lat: lat + x, lng: lng + y }
 }
 
+// Remove all mock data arrays to ensure no placeholder profiles are created
+/*
 const mockNames = [
   { display: "Alex Chen", username: "alexchen" },
   { display: "Jordan Smith", username: "jordansmith" },
@@ -127,90 +129,10 @@ const links = [
   { title: "Portfolio", url: "https://example.com" },
   { title: "LinkedIn", url: "https://linkedin.com" },
 ]
+*/
 
 export function initializeMockData() {
-  if (typeof window === "undefined") return
-
-  const existingUsers = getAllUsers()
-  if (existingUsers.length > 0) return
-
-  const now = Date.now()
-  mockNames.forEach((name, index) => {
-    const userId = generateUserId()
-    const views = Math.floor(Math.random() * 500) + 10
-    const upvotes = Math.floor(Math.random() * 100) + 5
-    const streak = Math.floor(Math.random() * 30) + 1
-    const createdAt = now - Math.random() * 30 * 24 * 60 * 60 * 1000
-
-    const projects = Array.from({ length: 3 }, (_, i) => ({
-      id: `project_${userId}_${i}`,
-      title: projectTitles[(index * 3 + i) % projectTitles.length],
-      description: projectDescriptions[(index * 3 + i) % projectDescriptions.length],
-      bannerUrl: `/placeholder.svg?height=160&width=400&query=project${i}`,
-      link: `https://example.com/project-${index}-${i}`,
-      upvotes: Math.floor(Math.random() * 50),
-      views: Math.floor(Math.random() * 200) + 10,
-      createdAt: createdAt + i * 7 * 24 * 60 * 60 * 1000,
-    }))
-
-    const goal = {
-      title: goalTitles[index % goalTitles.length],
-      description: `Working towards achieving this goal with dedication and focus`,
-      startedAt: createdAt,
-      progressPercent: Math.floor(Math.random() * 100),
-    }
-
-    const social = {
-      x: name.username,
-      github: name.username,
-      website: `https://${name.username}.com`,
-      linkedin: name.username,
-    }
-
-    // Randomize location for privacy
-    const baseLocation = mockLocations[index % mockLocations.length]
-    const randomized = randomizeLocation(baseLocation.lat, baseLocation.lng)
-
-    const user: any = {
-      id: userId,
-      username: name.username,
-      displayName: name.display,
-      quote: quotes[index % quotes.length],
-      bio: bios[index % bios.length],
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name.username}`,
-      social,
-      goal,
-      projects,
-      links: [links[Math.floor(Math.random() * links.length)]],
-      interests: interests[index % interests.length],
-      views,
-      upvotes,
-      rank: index + 1,
-      createdAt,
-      badges: [],
-      streak,
-      lastActiveDate: now,
-      lastSeenDate: new Date(now - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-      dailyViews: Array.from({ length: 7 }, (_, i) => ({
-        date: new Date(now - (6 - i) * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-        count: Math.floor(Math.random() * 50),
-      })),
-      dailyUpvotes: Array.from({ length: 7 }, (_, i) => ({
-        date: new Date(now - (6 - i) * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-        count: Math.floor(Math.random() * 10),
-      })),
-      location: {
-        lat: randomized.lat,
-        lng: randomized.lng,
-        city: baseLocation.city,
-        country: baseLocation.country,
-      },
-      hideLocation: false,
-      metrics: { mapClicks: 0 },
-      schemaVersion: 3,
-    }
-
-    user.badges = generateBadges(user)
-    saveUserProfile(user)
-  })
+  // This function is intentionally left empty to prevent mock data initialization
+  // The application will start with 0 users as requested
+  return
 }

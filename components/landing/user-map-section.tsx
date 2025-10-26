@@ -3,7 +3,10 @@
 import { motion } from "framer-motion"
 import { useEffect, useRef, useState } from "react"
 import dynamic from "next/dynamic"
+import { getAllUsers } from "@/lib/storage"
 
+// Remove mock data and fetch real data instead
+/*
 const mockMapUsers = [
   { lat: 40.7128, lng: -74.006, name: "Sarah Chen", tagline: "Full-stack builder" },
   { lat: 51.5074, lng: -0.1278, name: "Alex Rivera", tagline: "Design enthusiast" },
@@ -11,6 +14,7 @@ const mockMapUsers = [
   { lat: 19.076, lng: 72.8777, name: "Morgan Lee", tagline: "Product maker" },
   { lat: -33.8688, lng: 151.2093, name: "Taylor Swift", tagline: "Creative coder" },
 ]
+*/
 
 function MapComponent() {
   const mapRef = useRef<any>(null)
@@ -47,8 +51,19 @@ function MapComponent() {
         maxZoom: 20,
       }).addTo(mapRef.current)
 
+      // Get real users with location data
+      const allUsers = getAllUsers()
+      const realMapUsers = allUsers
+        .filter(user => user.location && !user.hideLocation)
+        .map(user => ({
+          lat: user.location!.lat,
+          lng: user.location!.lng,
+          name: user.displayName,
+          tagline: user.bio.substring(0, 30) + (user.bio.length > 30 ? "..." : "")
+        }))
+
       // Add markers with popup
-      mockMapUsers.forEach((user) => {
+      realMapUsers.forEach((user) => {
         const icon = L.divIcon({
           className: "custom-map-pin",
           html: `<div class="w-4 h-4 bg-[#37322F] rounded-full border-2 border-white shadow-lg animate-pulse"></div>`,
@@ -78,15 +93,32 @@ function MapComponent() {
     }
   }, [mounted])
 
+  // Get real users to check if we have any
+  const allUsers = getAllUsers()
+  const usersWithLocation = allUsers.filter(user => user.location && !user.hideLocation)
+
   return (
-    <div
-      ref={mapContainerRef}
-      className="w-full h-[400px] rounded-lg overflow-hidden border border-[#E0DEDB] shadow-sm"
-    />
+    <div className="relative">
+      {usersWithLocation.length === 0 ? (
+        <div className="w-full h-[400px] rounded-lg overflow-hidden border border-[#E0DEDB] shadow-sm flex items-center justify-center bg-[#F7F5F3]">
+          <p className="text-[#605A57] text-center p-6">
+            No builders on the map yet. Be the first to join and appear here!
+          </p>
+        </div>
+      ) : (
+        <div
+          ref={mapContainerRef}
+          className="w-full h-[400px] rounded-lg overflow-hidden border border-[#E0DEDB] shadow-sm"
+        />
+      )}
+    </div>
   )
 }
 
 export default function UserMapSection() {
+  const allUsers = getAllUsers()
+  const usersWithLocation = allUsers.filter(user => user.location && !user.hideLocation)
+
   return (
     <section className="py-20 px-6 bg-[#F7F5F3]">
       <div className="max-w-6xl mx-auto">
@@ -99,7 +131,9 @@ export default function UserMapSection() {
         >
           <h2 className="text-5xl font-serif text-[#37322F] mb-4">Global Community</h2>
           <p className="text-lg text-[#605A57] max-w-xl mx-auto">
-            Connect with builders from around the world
+            {usersWithLocation.length > 0 
+              ? "Connect with builders from around the world" 
+              : "Be the first to join our global community!"}
           </p>
         </motion.div>
 

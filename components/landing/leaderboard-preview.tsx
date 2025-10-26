@@ -4,7 +4,10 @@ import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Eye, TrendingUp, Award } from "lucide-react"
+import { getAllUsers, calculateScore } from "@/lib/storage"
 
+// Remove mock data and fetch real data instead
+/*
 const mockLeaderboardData = [
   { 
     rank: 1, 
@@ -137,10 +140,30 @@ const mockLeaderboardData = [
     bgGlow: ""
   },
 ]
+*/
 
 export default function LeaderboardPreview() {
   const router = useRouter()
   const [upvotedUsers, setUpvotedUsers] = useState<Set<number>>(new Set())
+  
+  // Get real users and calculate their scores
+  const allUsers = getAllUsers()
+  const leaderboardData = allUsers
+    .map((user, index) => ({
+      rank: index + 1,
+      name: user.displayName,
+      score: calculateScore(user, "all-time"),
+      badge: getRankBadge(index + 1),
+      avatar: user.avatar,
+      upvotes: user.upvotes,
+      streak: user.streak,
+      views: user.views,
+      badges: user.badges,
+      borderColor: getBorderColor(index + 1),
+      bgGlow: getBgGlow(index + 1)
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10)
 
   const handleUpvote = (rank: number, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -153,6 +176,46 @@ export default function LeaderboardPreview() {
       }
       return newSet
     })
+  }
+
+  // If no users exist, show a message instead of mock data
+  if (allUsers.length === 0) {
+    return (
+      <section className="py-20 px-6 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-5xl font-serif text-[#37322F] mb-4">Top Builders</h2>
+            <p className="text-lg text-[#605A57] max-w-xl mx-auto">
+              Be the first to join our leaderboard! Create your profile to get started.
+            </p>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.2, ease: "easeInOut" }}
+            className="bg-[#F7F5F3] rounded-lg border border-[#E0DEDB] overflow-hidden p-12 text-center"
+          >
+            <p className="text-[#605A57]">
+              No builders yet. Be the first to join and climb the ranks!
+            </p>
+            <button
+              onClick={() => router.push("/leaderboard")}
+              className="mt-6 px-8 py-3 bg-[#37322F] text-white rounded-full font-medium hover:bg-[#2a2520] transition"
+            >
+              View Full Leaderboard
+            </button>
+          </motion.div>
+        </div>
+      </section>
+    )
   }
 
   return (
@@ -192,7 +255,7 @@ export default function LeaderboardPreview() {
                 </tr>
               </thead>
               <tbody>
-                {mockLeaderboardData.map((user, index) => {
+                {leaderboardData.map((user, index) => {
                   const isUpvoted = upvotedUsers.has(user.rank)
                   const currentUpvotes = user.upvotes + (isUpvoted ? 1 : 0)
                   
@@ -229,9 +292,9 @@ export default function LeaderboardPreview() {
                       {/* Badges */}
                       <td className="py-4 px-4">
                         <div className="flex items-center justify-center gap-1">
-                          {user.badges.map((badge, i) => (
+                          {user.badges.slice(0, 3).map((badge, i) => (
                             <span key={i} className="text-lg" title="Achievement Badge">
-                              {badge}
+                              {getBadgeEmoji(badge)}
                             </span>
                           ))}
                         </div>
@@ -304,4 +367,44 @@ export default function LeaderboardPreview() {
       </div>
     </section>
   )
+}
+
+// Helper functions
+function getRankBadge(rank: number): string {
+  if (rank === 1) return "🥇"
+  if (rank === 2) return "🥈"
+  if (rank === 3) return "🥉"
+  return ""
+}
+
+function getBorderColor(rank: number): string {
+  if (rank === 1) return "border-yellow-400"
+  if (rank === 2) return "border-gray-300"
+  if (rank === 3) return "border-orange-400"
+  return "border-[#E0DEDB]"
+}
+
+function getBgGlow(rank: number): string {
+  if (rank === 1) return "shadow-yellow-400/30"
+  if (rank === 2) return "shadow-gray-400/30"
+  if (rank === 3) return "shadow-orange-400/30"
+  return ""
+}
+
+function getBadgeEmoji(badgeName: string): string {
+  const badgeMap: Record<string, string> = {
+    "Bronze": "🏆",
+    "Silver": "⭐",
+    "Gold": "🔥",
+    "Diamond": "💎",
+    "Popular": "🚀",
+    "Trending": "🎯",
+    "Viral": "⚡",
+    "Consistent": "🌟",
+    "Dedicated": "🎨",
+    "Unstoppable": "💫",
+    "Builder": "🏗️",
+    "Prolific": "📈"
+  }
+  return badgeMap[badgeName] || "🏅"
 }
